@@ -1,0 +1,43 @@
+{
+  "name": "sbooker/domain-events-persistence-doctrine",
+  "description": "Domain events storage Doctrine implementation",
+  "type": "library",
+  "license": "MIT",
+  "require": {
+    "php": "^7.4 || ^8.0",
+    "doctrine/orm": "^2.7",
+    "sbooker/domain-events-persistence": "^1.0"
+  },
+  "require-dev": {
+    "gamez/ramsey-uuid-normalizer": "^2.0",
+    "phpunit/phpunit": "^9.0",
+    "ramsey/uuid-doctrine": "^1.6",
+    "sbooker/doctrine-transaction-handler": "^1.0",
+    "sbooker/persistent-pointer-doctrine": "^1.0",
+    "symfony/property-access": "^5.0",
+    "symfony/property-info": "^5.0",
+    "symfony/serializer": "^5.0"
+  },
+  "suggest": {
+    "gamez/ramsey-uuid-normalizer": "^2.0",
+    "ramsey/uuid-doctrine": "^1.6",
+    "sbooker/doctrine-transaction-handler": "^1.0",
+    "sbooker/persistent-pointer-doctrine": "^1.0",
+    "symfony/property-access": "^5.0",
+    "symfony/property-info": "^5.0",
+    "symfony/serializer": "^5.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Sbooker\\DomainEvents\\Persistence\\Doctrine\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Test\\Sbooker\\DomainEvents\\Persistence\\Doctrine\\": "tests/"
+    }
+  },
+  "config": {
+    "sort-packages": true
+  }
+}

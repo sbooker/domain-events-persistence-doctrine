@@ -1,0 +1,53 @@
+version: '3'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      XDEBUG_CONFIG: remote_host=host.docker.internal remote_port=9000 idekey=PHPSTORM
+      PHP_IDE_CONFIG: serverName=app
+    volumes:
+      - ~/.ssh:/home/app/.ssh:ro
+      - ../../:/opt/app
+    tty: true
+    restart: always
+    links:
+      - pgsql11
+      - pgsql12
+      - mysql5
+      - mysql8
+
+  pgsql11:
+    image: postgres:11.5
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: user
+      POSTGRES_DB: test
+
+  pgsql12:
+    image: postgres:12
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: user
+      POSTGRES_DB: test
+
+  mysql5:
+    image: mysql/mysql-server:5.5
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'test'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'password'
+      MYSQL_ROOT_PASSWORD: 'password'
+
+  mysql8:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'test'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'password'
+      MYSQL_ROOT_PASSWORD: 'password'

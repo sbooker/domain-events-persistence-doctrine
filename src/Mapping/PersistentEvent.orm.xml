@@ -1,0 +1,30 @@
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                          https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+    <entity
+            name="Sbooker\DomainEvents\Persistence\PersistentEvent"
+            table="event"
+            repository-class="Sbooker\DomainEvents\Persistence\Doctrine\PersistentEventDoctrineRepository"
+    >
+        <unique-constraints>
+            <unique-constraint columns="id" name="uq_event_id" />
+        </unique-constraints>
+        <indexes>
+            <index name="ix_event_name" columns="name"/>
+            <index name="ix_event_occurred_at" columns="occurred_at"/>
+        </indexes>
+
+        <id name="position" type="bigint" >
+            <generator strategy="IDENTITY"/>
+        </id>
+        <field name="id" type="uuid" unique="true"/>
+        <field name="name" type="string" length="1023"/>
+        <field name="occurredAt" type="datetimetz_immutable"/>
+        <field name="payload" type="json">
+            <options>
+                <option name="jsonb">true</option>
+            </options>
+        </field>
+    </entity>
+</doctrine-mapping>
