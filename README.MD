@@ -10,7 +10,7 @@ Doctrine implementation [sbooker/domain-events-persistence-doctrine](https://git
 ## Installation
 Install via [Composer][composer]:
 ```bash
-composer require sbooker/domain-events-persistence-doctrine-doctrine
+composer require sbooker/domain-events-persistence-doctrine
 ```
 
 ### Configuration
