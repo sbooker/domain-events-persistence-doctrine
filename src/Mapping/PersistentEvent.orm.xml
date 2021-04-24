@@ -13,6 +13,7 @@
         <indexes>
             <index name="ix_event_name" columns="name"/>
             <index name="ix_event_occurred_at" columns="occurred_at"/>
+            <index name="ix_event_entity_id" columns="entity_id"/>
         </indexes>
 
         <id name="position" type="bigint" >
@@ -21,6 +22,7 @@
         <field name="id" type="uuid" unique="true"/>
         <field name="name" type="string" length="1023"/>
         <field name="occurredAt" type="datetimetz_immutable"/>
+        <field name="entityId" type="uuid" />
         <field name="payload" type="json">
             <options>
                 <option name="jsonb">true</option>
