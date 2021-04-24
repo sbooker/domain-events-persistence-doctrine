@@ -6,7 +6,7 @@
   "require": {
     "php": "^7.4 || ^8.0",
     "doctrine/orm": "^2.7",
-    "sbooker/domain-events-persistence": "^1.0"
+    "sbooker/domain-events-persistence": "^1.1"
   },
   "require-dev": {
     "gamez/ramsey-uuid-normalizer": "^2.0",
