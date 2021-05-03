@@ -37,10 +37,11 @@ final class EntityManagerBuilder
         $configuration->setQueryCacheImpl(new \Doctrine\Common\Cache\ArrayCache());
         $configuration->setProxyDir(__DIR__ . '/Proxies');
         $configuration->setProxyNamespace('Test\Sbooker\DomainEvents\Persistence\Doctrine\Proxies');
-        $configuration->setAutoGenerateProxyClasses(true);
+        $configuration->setAutoGenerateProxyClasses(false);
         $configuration->setMetadataDriverImpl(
             new SimplifiedXmlDriver([
                 __DIR__ . '/../src/Mapping/' => 'Sbooker\DomainEvents\Persistence',
+                __DIR__ . '/Mapping/' => 'Test\Sbooker\DomainEvents\Persistence\Doctrine',
                 __DIR__ . '/../vendor/sbooker/persistent-pointer-doctrine/src/Mapping' => 'Sbooker\PersistentPointer',
             ])
         );

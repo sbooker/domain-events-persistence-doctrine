@@ -10,17 +10,13 @@ use Gamez\Symfony\Component\Serializer\Normalizer\UuidNormalizer;
 use Ramsey\Uuid\UuidInterface;
 use Sbooker\DomainEvents\Actor;
 use Sbooker\DomainEvents\DomainEvent;
-use Sbooker\DomainEvents\DomainEventSubscriber;
-use Sbooker\DomainEvents\Persistence\Consumer;
+use Sbooker\DomainEvents\Persistence\Doctrine\DispatchEntityEventsDoctrineSubscriber;
 use Sbooker\DomainEvents\Persistence\Doctrine\PersistentEventDoctrineRepository;
 use Sbooker\DomainEvents\Persistence\EventNameGiver;
-use Sbooker\DomainEvents\Persistence\EventStorage;
 use Sbooker\DomainEvents\Persistence\MapNameGiver;
 use Sbooker\DomainEvents\Persistence\PersistentEvent;
 use Sbooker\DomainEvents\Persistence\PersistentPublisher;
 use Sbooker\DomainEvents\Persistence\PositionGenerator;
-use Sbooker\PersistentPointer\Pointer;
-use Sbooker\PersistentPointer\Repository;
 use Sbooker\TransactionManager\DoctrineTransactionHandler;
 use Sbooker\TransactionManager\TransactionManager;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
@@ -75,6 +71,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         $this->publisher = new PersistentPublisher($this->getEventStorage($em), $this->nameGiver, $this->serializer, $this->positionGenerator);
         $this->transactionManager = new TransactionManager(new DoctrineTransactionHandler($em));
         $this->schemaTool->createSchema($this->getMetadata($em));
+        $subscriber = new DispatchEntityEventsDoctrineSubscriber($this->publisher);
+        $em->getEventManager()->addEventSubscriber($subscriber);
 
         return $em;
     }
@@ -139,6 +137,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         return new MapNameGiver([
             TestEvent::class => "com.sbooker.test.event",
             OtherEvent::class => "com.sbooker.test.other_event",
+            Created::class => "com.sbooker.test.entity.created",
         ]);
     }
 }

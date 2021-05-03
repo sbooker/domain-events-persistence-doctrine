@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace Sbooker\DomainEvents\Persistence\Doctrine;
 
 use Ramsey\Uuid\UuidInterface;
-use Sbooker\DomainEvents\Persistence\CleanableStorage;
-use Sbooker\DomainEvents\Persistence\EventReadStorage;
+use Sbooker\DomainEvents\Persistence\CleanExpiredStorage;
+use Sbooker\DomainEvents\Persistence\ConsumeStorage;
 use Sbooker\DomainEvents\Persistence\PersistentEvent;
-use Sbooker\DomainEvents\Persistence\EventStorage;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query;
+use Sbooker\DomainEvents\Persistence\SearchStorage;
+use Sbooker\DomainEvents\Persistence\WriteStorage;
 
-final class PersistentEventDoctrineRepository extends EntityRepository implements EventStorage, EventReadStorage, CleanableStorage
+final class PersistentEventDoctrineRepository extends EntityRepository implements WriteStorage, ConsumeStorage, SearchStorage, CleanExpiredStorage
 {
     /**
      * @throws \Doctrine\ORM\ORMException

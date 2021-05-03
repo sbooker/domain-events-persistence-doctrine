@@ -5,22 +5,13 @@ declare(strict_types=1);
 namespace Test\Sbooker\DomainEvents\Persistence\Doctrine;
 
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Tools\SchemaTool;
 use Ramsey\Uuid\Uuid;
-use Ramsey\Uuid\UuidInterface;
 use Sbooker\DomainEvents\Actor;
 use Sbooker\DomainEvents\DomainEvent;
 use Sbooker\DomainEvents\DomainEventSubscriber;
 use Sbooker\DomainEvents\Persistence\Consumer;
-use Sbooker\DomainEvents\Persistence\EventNameGiver;
-use Sbooker\DomainEvents\Persistence\EventStorage;
-use Sbooker\DomainEvents\Persistence\MapNameGiver;
-use Sbooker\DomainEvents\Persistence\PersistentEvent;
-use Sbooker\DomainEvents\Persistence\PersistentPublisher;
 use Sbooker\PersistentPointer\Pointer;
 use Sbooker\PersistentPointer\Repository;
-use Sbooker\TransactionManager\DoctrineTransactionHandler;
-use Sbooker\TransactionManager\TransactionManager;
 
 class ConsumeEventsTest extends TestCase
 {
