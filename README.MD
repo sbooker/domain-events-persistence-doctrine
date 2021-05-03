@@ -63,7 +63,12 @@ services:
       - '@Sbooker\DomainEvents\Persistence\EventNameGiver'
 
   Sbooker\DomainEvents\Persistence\EventNameGiver:
-    class: Sbooker\DomainEvents\Persistence\ClassNameNameGiver 
+    class: Sbooker\DomainEvents\Persistence\ClassNameNameGiver
+
+  Sbooker\DomainEvents\Persistence\Doctrine\DispatchEntityEventsDoctrineSubscriber:
+    class: Sbooker\DomainEvents\Persistence\Doctrine\DispatchEntityEventsDoctrineSubscriber
+    tags:
+      - { name: doctrine.event_subscriber, connection: default }
 
 ```
 
