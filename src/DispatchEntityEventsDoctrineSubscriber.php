@@ -28,6 +28,10 @@ final class DispatchEntityEventsDoctrineSubscriber implements EventSubscriber
 
     public function preFlush(PreFlushEventArgs $args): void
     {
+        if ($args->getEntityManager()->getConnection()->getTransactionNestingLevel() > 1) {
+            return;
+        }
+
         foreach ($args->getEntityManager()->getUnitOfWork()->getIdentityMap() as $entities) {
             foreach ($entities as $entity) {
                 if (!$entity instanceof DomainEntity) {
