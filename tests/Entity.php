@@ -6,11 +6,11 @@ namespace Test\Sbooker\DomainEvents\Persistence\Doctrine;
 
 use Ramsey\Uuid\UuidInterface;
 use Sbooker\DomainEvents\DomainEntity;
-use Sbooker\DomainEvents\DominEventCollector;
+use Sbooker\DomainEvents\DomainEventCollector;
 
 class Entity implements DomainEntity
 {
-    use DominEventCollector;
+    use DomainEventCollector;
 
     private UuidInterface $id;
 
