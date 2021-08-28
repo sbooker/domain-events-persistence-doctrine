@@ -16,10 +16,9 @@ final class PublishEventTest extends TestCase
         $em = $this->setUpDbDeps($db);
 
         $entityId = Uuid::uuid4();
-        $this->getTransactionManager()->transactional(function () use ($em, $entityId) {
-            $entity = new Entity($entityId);
-            $em->persist($entity);
-        });
+        $this->getTransactionManager()->transactional(fn() =>
+            $this->getTransactionManager()->persist(new Entity($entityId))
+        );
 
         $events = $this->getEventStorage($em)->getByEntityIdAndPositions($entityId);
 

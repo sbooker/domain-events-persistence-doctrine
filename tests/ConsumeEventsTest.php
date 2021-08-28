@@ -10,8 +10,7 @@ use Sbooker\DomainEvents\Actor;
 use Sbooker\DomainEvents\DomainEvent;
 use Sbooker\DomainEvents\DomainEventSubscriber;
 use Sbooker\DomainEvents\Persistence\Consumer;
-use Sbooker\PersistentPointer\Pointer;
-use Sbooker\PersistentPointer\Repository;
+use Sbooker\DomainEvents\Persistence\ConsumerSubscriberBridge;
 
 class ConsumeEventsTest extends TestCase
 {
@@ -28,6 +27,7 @@ class ConsumeEventsTest extends TestCase
 
         $this->publish($event);
         $this->publish($otherEvent);
+        $em->flush();
         $firstConsume = $consumer->consume();
         $secondConsume = $consumer->consume();
         $thirdConsume = $consumer->consume();
@@ -80,6 +80,7 @@ class ConsumeEventsTest extends TestCase
 
         $this->publish($event);
         $this->publish($otherEvent);
+        $em->flush();
         $firstConsumerFirstConsume = $firstConsumer->consume();
         $secondConsumerFirstConsume = $secondConsumer->consume();
         $firstConsumerSecondConsume = $firstConsumer->consume();
@@ -103,10 +104,11 @@ class ConsumeEventsTest extends TestCase
             new Consumer(
                 $this->getEventStorage($em),
                 $this->getTransactionManager(),
-                $this->getSerializer(),
-                new Repository($em->getRepository(Pointer::class)),
-                $this->getNameGiver(),
-                $this->buildSubscriber($eventClasses, $expectedEvents),
+                new ConsumerSubscriberBridge(
+                    $this->getNameGiver(),
+                    $this->getSerializer(),
+                    $this->buildSubscriber($eventClasses, $expectedEvents)
+                ),
                 $name
             );
     }

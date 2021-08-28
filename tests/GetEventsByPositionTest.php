@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Test\Sbooker\DomainEvents\Persistence\Doctrine;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use Sbooker\DomainEvents\Persistence\PositionGenerator;
@@ -13,17 +14,21 @@ final class GetEventsByPositionTest extends TestCase
     /**
      * @dataProvider examples
      */
-    public function test(string $db, array $positions, ?int $from, ?int $to, bool $ordering, array $expected): void
+    public function test(string $db, ?int $from, ?int $to, bool $ordering, array $expected): void
     {
+        $em = $this->setUpDbDeps($db, $this->createPositionGenerator([ 1, 2, 3 ]));
         $entityId = Uuid::uuid4();
-        $this->setPositionGenerator($this->createPositionGenerator($positions));
-        $em = $this->setUpDbDeps($db);
-        $this->publishEvent($entityId);
-        $this->publishEvent($entityId);
-        $this->publishEvent($entityId);
+        $this->publishEvent($em, $entityId, '1');
+        $this->publishEvent($em, $entityId, '2');
+        $this->publishEvent($em, $entityId, '3');
+        $em->flush();
+        $em->clear();
 
         $events = $this->getEventStorage($em)->getByEntityIdAndPositions($entityId, $from, $to, $ordering);
+        $control = $this->getEventStorage($em)->getByEntityIdAndPositions($entityId);
 
+        $this->assertEquals(3, count($control));
+        $this->assertEquals(count($expected), count($events));
         foreach ($expected as $key => $value) {
             $this->assertEquals($value, $events[$key]->getPosition());
         }
@@ -40,11 +45,11 @@ final class GetEventsByPositionTest extends TestCase
     private function positionExamples(): array
     {
         return [
-            [[ 1, 2, 3 ], 1, 3, true, [2]],
-            [[ 1, 2, 3 ], null, 3, true,  [1, 2]],
-            [[ 1, 2, 3 ], 1, null, false, [3 ,2]],
-            [[ 1, 2, 3 ], null, null, true, [1, 2, 3]],
-            [[ 1, 2, 3 ], null, null, false, [3, 2, 1]],
+            [ 1, 3, true, [2]],
+            [ null, 3, true,  [1, 2]],
+            [ 1, null, false, [3 ,2]],
+            [ null, null, true, [1, 2, 3]],
+            [ null, null, false, [3, 2, 1]],
         ];
     }
 
@@ -78,16 +83,17 @@ final class GetEventsByPositionTest extends TestCase
             public function next(): int
             {
                 $current = $this->positions[$this->position];
-                $this->position++;
+                $this->position+= 1;
 
                 return $current;
             }
         };
     }
 
-    private function publishEvent(UuidInterface $entityId): void
+    private function publishEvent(EntityManagerInterface $em, UuidInterface $entityId, string $value): void
     {
-        $this->publish(new TestEvent($entityId, 'abracadabra'));
+        $this->publish(new TestEvent($entityId, $value));
+        // $em->flush();
     }
 }
 
