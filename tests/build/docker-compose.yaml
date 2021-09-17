@@ -25,6 +25,8 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_USER: user
       POSTGRES_DB: test
+    ports:
+      - "5433:5432"
 
   pgsql12:
     image: postgres:12

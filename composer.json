@@ -7,17 +7,18 @@
     "php": "^7.4 || ^8.0",
     "doctrine/orm": "^2.7",
     "sbooker/domain-events": "^2.0",
-    "sbooker/domain-events-persistence": "^2.2.0"
+    "sbooker/domain-events-persistence": "2.3.x-dev"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require-dev": {
-    "gamez/ramsey-uuid-normalizer": "^2.0",
     "doctrine/cache": "^1.12",
+    "gamez/ramsey-uuid-normalizer": "^2.0",
     "phpunit/phpunit": "^9.0",
     "ramsey/uuid-doctrine": "^1.6",
     "sbooker/doctrine-transaction-handler": "^2.0",
     "sbooker/persistent-pointer-doctrine": "^1.0",
+    "sbooker/persistent-sequences": "^0.5.0",
     "symfony/property-access": "^5.0",
     "symfony/property-info": "^5.0",
     "symfony/serializer": "^5.0"

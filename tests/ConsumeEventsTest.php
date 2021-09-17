@@ -27,7 +27,7 @@ class ConsumeEventsTest extends TestCase
 
         $this->publish($event);
         $this->publish($otherEvent);
-        $em->flush();
+
         $firstConsume = $consumer->consume();
         $secondConsume = $consumer->consume();
         $thirdConsume = $consumer->consume();

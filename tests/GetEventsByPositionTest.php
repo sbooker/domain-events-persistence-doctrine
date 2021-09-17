@@ -16,7 +16,7 @@ final class GetEventsByPositionTest extends TestCase
      */
     public function test(string $db, ?int $from, ?int $to, bool $ordering, array $expected): void
     {
-        $em = $this->setUpDbDeps($db, $this->createPositionGenerator([ 1, 2, 3 ]));
+        $em = $this->setUpDbDeps($db, $this->getPositionGenerator([ 1, 2, 3 ]));
         $entityId = Uuid::uuid4();
         $this->publishEvent($em, $entityId, '1');
         $this->publishEvent($em, $entityId, '2');
@@ -69,7 +69,7 @@ final class GetEventsByPositionTest extends TestCase
     /**
      * @param array<int> $positions
      */
-    private function createPositionGenerator(array $positions): PositionGenerator
+    private function getPositionGenerator(array $positions): PositionGenerator
     {
         return new class ($positions) implements PositionGenerator {
             private int $position = 0;
@@ -93,7 +93,6 @@ final class GetEventsByPositionTest extends TestCase
     private function publishEvent(EntityManagerInterface $em, UuidInterface $entityId, string $value): void
     {
         $this->publish(new TestEvent($entityId, $value));
-        // $em->flush();
     }
 }
 
