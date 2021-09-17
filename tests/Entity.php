@@ -19,4 +19,9 @@ class Entity implements DomainEntity
         $this->id = $id;
         $this->publish(new Created($this->id));
     }
+
+    public function update(): void
+    {
+        $this->publish(new Updated($this->id));
+    }
 }

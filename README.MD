@@ -32,9 +32,6 @@ doctrine:
 ```yaml
 # .../services.yaml
 services:
-  Sbooker\DomainEvents\Persistence\WriteStorage:
-    alias: Sbooker\DomainEvents\Persistence\Doctrine\PersistentEventDoctrineRepository
-
   Sbooker\DomainEvents\Persistence\ConsumeStorage:
     alias: Sbooker\DomainEvents\Persistence\Doctrine\PersistentEventDoctrineRepository
 
@@ -70,7 +67,7 @@ services:
   Sbooker\DomainEvents\Persistence\PersistentPublisher:
     class: Sbooker\DomainEvents\Persistence\PersistentPublisher
     arguments:
-      - '@Sbooker\DomainEvents\Persistence\WriteStorage'
+      - '@Sbooker\TransactionManager\TransactionManager'
       - '@Sbooker\DomainEvents\Persistence\EventNameGiver'
       - '@serializer'
 

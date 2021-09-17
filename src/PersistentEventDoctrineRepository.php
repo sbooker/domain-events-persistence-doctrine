@@ -12,18 +12,9 @@ use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query;
 use Sbooker\DomainEvents\Persistence\SearchStorage;
-use Sbooker\DomainEvents\Persistence\WriteStorage;
 
-final class PersistentEventDoctrineRepository extends EntityRepository implements WriteStorage, ConsumeStorage, SearchStorage, CleanExpiredStorage
+final class PersistentEventDoctrineRepository extends EntityRepository implements ConsumeStorage, SearchStorage, CleanExpiredStorage
 {
-    /**
-     * @throws \Doctrine\ORM\ORMException
-     */
-    public function add(PersistentEvent $event): void
-    {
-        $this->getEntityManager()->persist($event);
-    }
-
     /**
      * @throws Query\QueryException
      * @throws \Doctrine\ORM\NonUniqueResultException

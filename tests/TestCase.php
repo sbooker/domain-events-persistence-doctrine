@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace Test\Sbooker\DomainEvents\Persistence\Doctrine;
 
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use Gamez\Symfony\Component\Serializer\Normalizer\UuidNormalizer;
 use Ramsey\Uuid\UuidInterface;
 use Sbooker\DomainEvents\Actor;
 use Sbooker\DomainEvents\DomainEvent;
-use Sbooker\DomainEvents\Persistence\Doctrine\DispatchEntityEventsDoctrineSubscriber;
 use Sbooker\DomainEvents\Persistence\Doctrine\PersistentEventDoctrineRepository;
+use Sbooker\DomainEvents\Persistence\DomainEventPreCommitProcessor;
 use Sbooker\DomainEvents\Persistence\EventNameGiver;
 use Sbooker\DomainEvents\Persistence\MapNameGiver;
 use Sbooker\DomainEvents\Persistence\PersistentEvent;
@@ -20,6 +19,7 @@ use Sbooker\DomainEvents\Persistence\PersistentPublisher;
 use Sbooker\DomainEvents\Persistence\PositionGenerator;
 use Sbooker\TransactionManager\DoctrineTransactionHandler;
 use Sbooker\TransactionManager\TransactionManager;
+use Sbooker\TransactionManager\TransactionManagerAware;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
@@ -31,19 +31,19 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
     private const DATE_FORMAT = "Y-m-d\TH:i:s.uP";
 
-    private EventNameGiver $nameGiver;
-    private Serializer $serializer;
-    private TransactionManager $transactionManager;
-    private SchemaTool $schemaTool;
-    private PersistentPublisher $publisher;
+    private ?EventNameGiver $nameGiver = null;
+    private ?Serializer $serializer = null;
+    private ?TransactionManager $transactionManager = null;
+    private ?SchemaTool $schemaTool = null;
+    protected ?PersistentPublisher $publisher = null;
 
     public function dbs(): array
     {
         return [
             [ EntityManagerBuilder::PGSQL11 ],
-            [ EntityManagerBuilder::PGSQL12 ],
-            [ EntityManagerBuilder::MYSQL5 ],
-            [ EntityManagerBuilder::MYSQL8 ],
+//            [ EntityManagerBuilder::PGSQL12 ],
+//            [ EntityManagerBuilder::MYSQL5 ],
+//            [ EntityManagerBuilder::MYSQL8 ],
         ];
     }
 
@@ -56,21 +56,40 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
     final protected function publish(DomainEvent $event): void
     {
-        $this->publisher->publish($event);
+        $this->getTransactionManager()->transactional(fn() => $this->publisher->publish($event));
     }
 
-    final protected function setUpDbDeps(string $db, PositionGenerator $generator = null): EntityManager
+    final protected function setUpDbDeps(string $db, ?PositionGenerator $generator = null): EntityManager
     {
+        $generator = $generator ?? $this->createDefaultPositionGenerator();
         $em = EntityManagerBuilder::me()->get($db);
         $this->schemaTool = new SchemaTool($em);
         $this->schemaTool->dropSchema($this->getMetadata($em));
         $this->schemaTool->createSchema($this->getMetadata($em));
-        $this->transactionManager = new TransactionManager(new DoctrineTransactionHandler($em));
-        $this->publisher = new PersistentPublisher($this->getEventStorage($em), $this->nameGiver, $this->serializer, $generator);
-        $subscriber = new DispatchEntityEventsDoctrineSubscriber($this->publisher);
-        $em->getEventManager()->addEventSubscriber($subscriber);
+        $this->publisher = $this->createPersistentPublisher($generator);
+        $this->transactionManager = new TransactionManager(new DoctrineTransactionHandler($em), new DomainEventPreCommitProcessor($this->publisher));
+        if ($generator instanceof TransactionManagerAware) {
+            $generator->setTransactionManager($this->transactionManager);
+        }
 
         return $em;
+    }
+
+    private function createDefaultPositionGenerator(): PositionGenerator
+    {
+        return new class implements PositionGenerator {
+            private int $position = 0;
+            public function next(): int
+            {
+                $this->position+= 1;
+                return $this->position;
+            }
+        };
+    }
+
+    final protected function createPersistentPublisher(PositionGenerator $generator = null): PersistentPublisher
+    {
+        return new PersistentPublisher($this->nameGiver, $this->serializer, $generator);
     }
 
     final protected function tearDownDbDeps(EntityManager $em): void
@@ -128,6 +147,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
             TestEvent::class => "com.sbooker.test.event",
             OtherEvent::class => "com.sbooker.test.other_event",
             Created::class => "com.sbooker.test.entity.created",
+            Updated::class => "com.sbooker.test.entity.updated",
         ]);
     }
 }
