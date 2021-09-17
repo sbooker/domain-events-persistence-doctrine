@@ -43,6 +43,7 @@ final class EntityManagerBuilder
                 __DIR__ . '/../src/Mapping/' => 'Sbooker\DomainEvents\Persistence',
                 __DIR__ . '/Mapping/' => 'Test\Sbooker\DomainEvents\Persistence\Doctrine',
                 __DIR__ . '/../vendor/sbooker/persistent-pointer-doctrine/src/Mapping' => 'Sbooker\PersistentPointer',
+                __DIR__ . '/../vendor/sbooker/persistent-sequences/src/Persistence/Doctrine/Mapping' => 'Sbooker\PersistentSequences',
             ])
         );
         $configuration->setNamingStrategy(new UnderscoreNamingStrategy());

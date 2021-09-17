@@ -5,7 +5,7 @@
 [![PHP Version][badge-php]][php]
 [![Total Downloads][badge-downloads]][downloads]
 
-Doctrine implementation [sbooker/domain-events-persistence-doctrine](https://github.com/sbooker/domain-events-persistence-doctrine)
+Doctrine implementation [sbooker/domain-events-persistence](https://github.com/sbooker/domain-events-persistence)
 
 ## Installation
 Install via [Composer][composer]:
@@ -27,14 +27,8 @@ doctrine:
         type: xml
         dir: '%kernel.project_dir%/vendor/sbooker/domain-events-persistence-doctrine-doctrine/src/Mapping'
         prefix: Sbooker\DomainEvents\Persistence
-``` 
 
-```yaml
-# .../services.yaml
 services:
-  Sbooker\DomainEvents\Persistence\WriteStorage:
-    alias: Sbooker\DomainEvents\Persistence\Doctrine\PersistentEventDoctrineRepository
-
   Sbooker\DomainEvents\Persistence\ConsumeStorage:
     alias: Sbooker\DomainEvents\Persistence\Doctrine\PersistentEventDoctrineRepository
 
@@ -64,13 +58,29 @@ services:
     arguments:
       - Sbooker\PersistentPointer\Pointer
 
+  Sbooker\DomainEvents\Persistence\DomainEventPreCommitProcessor:
+    class: Sbooker\DomainEvents\Persistence\DomainEventPreCommitProcessor
+    arguments:
+      - '@Sbooker\DomainEvents\Publisher'
+
+  Sbooker\TransactionManager\TransactionManager:
+    class: Sbooker\TransactionManager\TransactionManager
+    arguments:
+      - '@Sbooker\TransactionManager\DoctrineTransactionHandler'
+      - '@Sbooker\DomainEvents\Persistence\DomainEventPreCommitProcessor'
+
+  Sbooker\TransactionManager\DoctrineTransactionHandler:
+    class: Sbooker\TransactionManager\DoctrineTransactionHandler
+    arguments:
+      - '@doctrine.orm.default_entity_manager'
+
   Sbooker\DomainEvents\Publisher:
     alias: Sbooker\DomainEvents\Persistence\PersistentPublisher
 
   Sbooker\DomainEvents\Persistence\PersistentPublisher:
     class: Sbooker\DomainEvents\Persistence\PersistentPublisher
     arguments:
-      - '@Sbooker\DomainEvents\Persistence\WriteStorage'
+      - '@Sbooker\TransactionManager\TransactionManager'
       - '@Sbooker\DomainEvents\Persistence\EventNameGiver'
       - '@serializer'
 
@@ -90,12 +100,6 @@ services:
       - '@Sbooker\PersistentPointer\Repository'
       - '@Sbooker\DomainEvents\Persistence\EventNameGiver'
 
-  Sbooker\DomainEvents\Persistence\Doctrine\DispatchEntityEventsDoctrineSubscriber:
-    class: Sbooker\DomainEvents\Persistence\Doctrine\DispatchEntityEventsDoctrineSubscriber
-    arguments:
-      - '@Sbooker\DomainEvents\Publisher'
-    tags:
-      - { name: doctrine.event_subscriber, connection: default }
 
 ```
 

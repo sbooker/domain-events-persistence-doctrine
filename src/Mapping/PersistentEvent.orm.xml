@@ -17,7 +17,7 @@
         </indexes>
 
         <id name="position" type="bigint" >
-            <generator strategy="IDENTITY"/>
+            <generator strategy="NONE"/>
         </id>
         <field name="id" type="uuid" unique="true"/>
         <field name="name" type="string" length="1023"/>
