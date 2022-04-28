@@ -41,9 +41,9 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     {
         return [
             [ EntityManagerBuilder::PGSQL11 ],
-//            [ EntityManagerBuilder::PGSQL12 ],
-//            [ EntityManagerBuilder::MYSQL5 ],
-//            [ EntityManagerBuilder::MYSQL8 ],
+            [ EntityManagerBuilder::PGSQL12 ],
+            [ EntityManagerBuilder::MYSQL5 ],
+            [ EntityManagerBuilder::MYSQL8 ],
         ];
     }
 

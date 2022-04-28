@@ -52,7 +52,7 @@ final class PublishEventTest extends TestCase
     /**
      * @dataProvider dbs
      */
-    public function testCreateAndUpdate(string $db): void
+    public function testCreateAndDoubleUpdate(string $db): void
     {
         $first = 1100;
         $em = $this->setUpDbDeps($db, $this->getPositionGenerator(new Increment($first)));
@@ -61,19 +61,26 @@ final class PublishEventTest extends TestCase
         $this->getTransactionManager()->transactional(function () use ($entityId) {
             $entity = new Entity($entityId);
             $this->getTransactionManager()->persist($entity);
+        });
+
+        $this->getTransactionManager()->transactional(function () use ($entityId) {
+            /** @var Entity $entity */
+            $entity = $this->getTransactionManager()->getLocked(Entity::class, $entityId);
+            $entity->update();
             $entity->update();
         });
 
         /** @var array<PersistentEvent> $events */
         $events = $this->getEventStorage($em)->getByEntityIdAndPositions($entityId);
         $position = (int)$this->getSequenceReader($em)->last('seq');
-        $expectedPosition = $first + 2;
+        $expectedPosition = $first + 3;
 
         try {
             $this->assertEquals($expectedPosition, $position, "Expects position $expectedPosition, $position given.");
-            $this->assertCount(2, $events);
+            $this->assertCount(3, $events);
             $this->assertEventAtPosition(Created::class, $first + 1, $events[0]);
-            $this->assertEventAtPosition(Updated::class, $expectedPosition, $events[1]);
+            $this->assertEventAtPosition(Updated::class, $expectedPosition - 1 , $events[1]);
+            $this->assertEventAtPosition(Updated::class, $expectedPosition, $events[2]);
         } catch (\Throwable $exception) {
             $this->fail($exception->getMessage());
         } finally {
