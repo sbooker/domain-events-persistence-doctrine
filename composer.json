@@ -7,7 +7,7 @@
     "php": "^7.4 || ^8.0",
     "doctrine/orm": "^2.7",
     "sbooker/domain-events": "^2.0",
-    "sbooker/domain-events-persistence": "^2.3 || >2.3.0"
+    "sbooker/domain-events-persistence": "^2.5"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
@@ -19,7 +19,7 @@
     "sbooker/doctrine-transaction-handler": "^2.0",
     "sbooker/persistent-pointer-doctrine": "^1.0",
     "sbooker/persistent-sequences": "^0.5.0",
-    "sbooker/transaction-manager": "^2.1",
+    "sbooker/transaction-manager": "^2.2",
     "symfony/property-access": "^5.0 || ^6.0",
     "symfony/property-info": "^5.0 || ^6.0",
     "symfony/serializer": "^5.0 || ^6.0"
