@@ -7,13 +7,14 @@
     "php": "^7.4 || ^8.0",
     "doctrine/orm": "^2.7",
     "sbooker/domain-events": "^2.0",
-    "sbooker/domain-events-persistence": "^2.5"
+    "sbooker/domain-events-persistence": "2.5.2"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require-dev": {
     "doctrine/cache": "^1.12",
     "gamez/ramsey-uuid-normalizer": "^2.0 || ^3.0",
+    "phpdocumentor/reflection-docblock": "^5.3",
     "phpunit/phpunit": "^9.0",
     "ramsey/uuid-doctrine": "^1.6",
     "sbooker/doctrine-transaction-handler": "^2.0",
