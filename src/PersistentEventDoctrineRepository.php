@@ -7,13 +7,14 @@ namespace Sbooker\DomainEvents\Persistence\Doctrine;
 use Ramsey\Uuid\UuidInterface;
 use Sbooker\DomainEvents\Persistence\CleanExpiredStorage;
 use Sbooker\DomainEvents\Persistence\ConsumeStorage;
+use Sbooker\DomainEvents\Persistence\IdentityStorage;
 use Sbooker\DomainEvents\Persistence\PersistentEvent;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query;
 use Sbooker\DomainEvents\Persistence\SearchStorage;
 
-final class PersistentEventDoctrineRepository extends EntityRepository implements ConsumeStorage, SearchStorage, CleanExpiredStorage
+final class PersistentEventDoctrineRepository extends EntityRepository implements ConsumeStorage, SearchStorage, CleanExpiredStorage, IdentityStorage
 {
     /**
      * @throws Query\QueryException
@@ -30,6 +31,17 @@ final class PersistentEventDoctrineRepository extends EntityRepository implement
                         ->orderBy(['position' => Criteria::ASC])
                         ->setMaxResults(1)
 
+                )
+                ->getQuery()
+                ->getOneOrNullResult();
+    }
+
+    public function findById(UuidInterface $id): ?PersistentEvent
+    {
+        return
+            $this->createQueryBuilder('t')
+                ->addCriteria(
+                    Criteria::create()->andWhere(Criteria::expr()->eq('id', $id))
                 )
                 ->getQuery()
                 ->getOneOrNullResult();
