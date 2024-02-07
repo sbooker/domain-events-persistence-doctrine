@@ -7,7 +7,7 @@
     "php": "^7.4 || ^8.0",
     "doctrine/orm": "^2.7",
     "sbooker/domain-events": "^2.0",
-    "sbooker/domain-events-persistence": "2.5.2"
+    "sbooker/domain-events-persistence": "2.5.2 || ^2.6"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
