@@ -1,106 +1,108 @@
-# sbooker/domain-events-persistence-doctrine
+[Read in English](README.EN.MD)
+
+# Doctrine Persistence for Domain Events (`sbooker/doctrine-domain-events-persistence`)
 
 [![Latest Version][badge-release]][release]
 [![Software License][badge-license]][license]
 [![PHP Version][badge-php]][php]
 [![Total Downloads][badge-downloads]][downloads]
 
-Doctrine implementation [sbooker/domain-events-persistence](https://github.com/sbooker/domain-events-persistence)
+Готовая реализация хранилищ для [sbooker/domain-events-persistence](https://github.com/sbooker/domain-events-persistence) с использованием Doctrine ORM.
 
-## Installation
-Install via [Composer][composer]:
+## Назначение библиотеки
+
+Эта библиотека предоставляет единый, готовый к использованию Doctrine-репозиторий, который реализует **все интерфейсы хранения**, определенные в `sbooker/domain-events-persistence`:
+
+*   `ConsumeStorage`
+*   `SearchStorage`
+*   `CleanExpiredStorage`
+*   `IdentityStorage`
+
+Использование этой библиотеки избавляет вас от необходимости писать собственную реализацию этих интерфейсов для Doctrine.
+
+## Установка
+
 ```bash
 composer require sbooker/domain-events-persistence-doctrine
 ```
+**Зависимости:**
+*   `sbooker/domain-events-persistence`
+*   `doctrine/orm`
 
-### Configuration
+## Использование
 
-In Symfony:
-```yaml
-config/packages/sbooker_domain_events_persistence_doctrine.yaml
+### Шаг 1: Настройте маппинг для `PersistentEvent`
 
-doctrine:
-  orm:
-    mappings:
-      DomainEvents:
-        is_bundle: false
-        type: xml
-        dir: '%kernel.project_dir%/vendor/sbooker/domain-events-persistence-doctrine-doctrine/src/Mapping'
-        prefix: Sbooker\DomainEvents\Persistence
+Вам необходимо сообщить Doctrine, как сохранять сущность `Sbooker\DomainEvents\Persistence\PersistentEvent` в базу данных.
 
-services:
-  Sbooker\DomainEvents\Persistence\ConsumeStorage:
-    alias: Sbooker\DomainEvents\Persistence\Doctrine\PersistentEventDoctrineRepository
+Ниже приведен наиболее распространенный сценарий, где position является автоинкрементным первичным ключом.
 
-  Sbooker\DomainEvents\Persistence\SearchStorage:
-    alias: Sbooker\DomainEvents\Persistence\Doctrine\PersistentEventDoctrineRepository
+**Пример маппинга (XML):**
+```xml
+<!-- config/doctrine/Sbooker.DomainEvents.Persistence.PersistentEvent.orm.xml -->
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping">
+    <entity name="Sbooker\DomainEvents\Persistence\PersistentEvent"
+            table="event"
+            repository-class="Sbooker\DomainEvents\Persistence\Doctrine\PersistentEventDoctrineRepository">
 
-  Sbooker\DomainEvents\Persistence\CleanExpiredStorage:
-    alias: Sbooker\DomainEvents\Persistence\Doctrine\PersistentEventDoctrineRepository
+        <!-- `position` как автоинкрементный первичный ключ -->
+        <id name="position" type="bigint"> <!-- или integer, если уверены что емкости хватит -->
+            <generator strategy="IDENTITY"/>
+            <options>
+                <option name="unsigned">true</option>
+            </options>
+        </id>
 
-  Sbooker\DomainEvents\Persistence\Doctrine\PersistentEventDoctrineRepository:
-    class: Sbooker\DomainEvents\Persistence\Doctrine\PersistentEventDoctrineRepository
-    factory: ['@doctrine', getRepository]
-    arguments:
-      - Sbooker\DomainEvents\Persistence\PersistentEvent
+        <!-- `id` события как уникальный идентификатор (не первичный ключ) -->
+        <field name="id" type="uuid" unique="true" />
 
-  Sbooker\PersistentPointer\Repository:
-    class: Sbooker\PersistentPointer\Repository
-    arguments:
-      - '@Sbooker\PersistentPointer\PointerStorage'
+        <field name="name" type="string" length="255" />
+        <field name="occurredAt" type="datetimetz_immutable" />
+        <field name="entityId" type="uuid" />
+        <field name="payload" type="json">
+            <options>
+                <option name="jsonb">true</option>
+            </options>
+        </field>
 
-  Sbooker\PersistentPointer\PointerStorage:
-    alias: Sbooker\PersistentPointer\PersistentPointerDoctrineRepository
+        <indexes>
+            <!-- Индекс для поиска по именам событий (для ConsumeStorage) -->
+            <index name="ix_event_name" columns="name"/>
+            <!-- Индекс для поиска по ID сущности (для SearchStorage) -->
+            <index name="ix_event_entity_id" columns="entity_id"/>
+            <!-- Индекс для поиска по времени возникновения события (для CleanExpiredStorage и SearchStorage) -->
+            <index name="ix_event_occurred_at" columns="occurred_at"/>
+        </indexes>
 
-  Sbooker\PersistentPointer\PersistentPointerDoctrineRepository:
-    class: Sbooker\PersistentPointer\PersistentPointerDoctrineRepository
-    factory: [ '@doctrine', getRepository ]
-    arguments:
-      - Sbooker\PersistentPointer\Pointer
+    </entity>
+</doctrine-mapping>
+```
+**Важно:** Укажите `repository-class` в маппинге, чтобы Doctrine знала, что для этой сущности нужно использовать репозиторий из этой библиотеки.
 
-  Sbooker\DomainEvents\Persistence\DomainEventPreCommitProcessor:
-    class: Sbooker\DomainEvents\Persistence\DomainEventPreCommitProcessor
-    arguments:
-      - '@Sbooker\DomainEvents\Publisher'
+### Шаг 2: Используйте репозиторий в DI-контейнере
 
-  Sbooker\TransactionManager\TransactionManager:
-    class: Sbooker\TransactionManager\TransactionManager
-    arguments:
-      - '@Sbooker\TransactionManager\DoctrineTransactionHandler'
-      - '@Sbooker\DomainEvents\Persistence\DomainEventPreCommitProcessor'
+Теперь вы можете получить репозиторий из `EntityManager` и передать его в `ConsumerFactory` и другие сервисы, которым он нужен.
 
-  Sbooker\TransactionManager\DoctrineTransactionHandler:
-    class: Sbooker\TransactionManager\DoctrineTransactionHandler
-    arguments:
-      - '@doctrine.orm.default_entity_manager'
+```php
+// bootstrap.php или ваш DI-контейнер
 
-  Sbooker\DomainEvents\Publisher:
-    alias: Sbooker\DomainEvents\Persistence\PersistentPublisher
+use Doctrine\ORM\EntityManagerInterface;
+use Sbooker\DomainEvents\Persistence\ConsumerFactory;
 
-  Sbooker\DomainEvents\Persistence\PersistentPublisher:
-    class: Sbooker\DomainEvents\Persistence\PersistentPublisher
-    arguments:
-      - '@Sbooker\TransactionManager\TransactionManager'
-      - '@Sbooker\DomainEvents\Persistence\EventNameGiver'
-      - '@serializer'
+/** @var EntityManagerInterface $entityManager */
 
-  Sbooker\DomainEvents\Persistence\EventNameGiver:
-    class: Sbooker\DomainEvents\Persistence\MapNameGiver
-    arguments:
-      - []
+// 1. Получаем наш готовый репозиторий из EntityManager
+$persistentEventRepository = $entityManager->getRepository(\Sbooker\DomainEvents\Persistence\PersistentEvent::class);
 
-  # Each event consumer must inherit this configuration
-  Sbooker\DomainEvents\Persistence\Consumer:
-    abstract: true
-    class: Sbooker\DomainEvents\Persistence\Consumer
-    arguments:
-      - '@Sbooker\DomainEvents\Persistence\ConsumeStorage'
-      - '@Sbooker\TransactionManager\TransactionManager'
-      - '@serializer'
-      - '@Sbooker\PersistentPointer\Repository'
-      - '@Sbooker\DomainEvents\Persistence\EventNameGiver'
+// 2. Передаем его в ConsumerFactory и другие сервисы
+$consumerFactory = new ConsumerFactory(
+    $persistentEventRepository, // Реализует ConsumeStorage
+    // ...
+);
 
-
+$myAuditService = new MyAuditService(
+    $persistentEventRepository // Реализует SearchStorage
+);
 ```
 
 ## License
