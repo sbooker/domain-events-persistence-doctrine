@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Test\Sbooker\DomainEvents\Persistence\Doctrine;
 
+use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
@@ -22,9 +23,6 @@ final class EntityManagerBuilder
 
     private Configuration $configuration;
 
-    /** @var EntityManager[] */
-    private array $ems = [];
-
     private function __construct()
     {
         $this->configuration = $this->buildConfiguration();
@@ -33,8 +31,6 @@ final class EntityManagerBuilder
     private function buildConfiguration(): Configuration
     {
         $configuration = new Configuration();
-        $configuration->setMetadataCacheImpl(new \Doctrine\Common\Cache\ArrayCache());
-        $configuration->setQueryCacheImpl(new \Doctrine\Common\Cache\ArrayCache());
         $configuration->setProxyDir(__DIR__ . '/Proxies');
         $configuration->setProxyNamespace('Test\Sbooker\DomainEvents\Persistence\Doctrine\Proxies');
         $configuration->setAutoGenerateProxyClasses(false);
@@ -63,11 +59,16 @@ final class EntityManagerBuilder
 
     public function get(string $db): EntityManager
     {
-        if (!isset($this->ems[$db])) {
-            $this->ems[$db] = EntityManager::create(self::getParams($db), $this->configuration);
+        return self::createEntityManager(self::getParams($db), $this->configuration);
+    }
+
+    private static function createEntityManager(array $params, Configuration $configuration): EntityManager
+    {
+        if (method_exists(EntityManager::class, 'create')) {
+            return EntityManager::create($params, $configuration);
         }
 
-        return $this->ems[$db];
+        return new EntityManager(DriverManager::getConnection($params, $configuration), $configuration);
     }
 
     private static function getParams(string $db): array

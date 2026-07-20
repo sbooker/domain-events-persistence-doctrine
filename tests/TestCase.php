@@ -39,12 +39,19 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
     public function dbs(): array
     {
-        return [
+        $dbs = [
             [ EntityManagerBuilder::PGSQL11 ],
             [ EntityManagerBuilder::PGSQL12 ],
             [ EntityManagerBuilder::MYSQL5 ],
             [ EntityManagerBuilder::MYSQL8 ],
         ];
+
+        $mysql55Supported = method_exists(EntityManager::class, 'create');
+        if (!$mysql55Supported) {
+            $dbs = array_values(array_filter($dbs, static fn(array $db): bool => $db[0] !== EntityManagerBuilder::MYSQL5));
+        }
+
+        return $dbs;
     }
 
     protected function setUp(): void
